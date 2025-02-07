@@ -2,6 +2,7 @@ package rest
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/loanengine/internal/service"
 )
 
 type RestHandler interface {
@@ -25,32 +26,10 @@ type RestHandler interface {
 	GetList(c *gin.Context)
 }
 
-type restHandler struct{}
-
-func (r restHandler) Propose(c *gin.Context) {
-	panic("implement me")
+type restHandler struct {
+	loanService service.LoanService
 }
 
-func (r restHandler) Approve(c *gin.Context) {
-	panic("implement me")
-}
-
-func (r restHandler) Invest(c *gin.Context) {
-	panic("implement me")
-}
-
-func (r restHandler) Disburse(c *gin.Context) {
-	panic("implement me")
-}
-
-func (r restHandler) GetState(c *gin.Context) {
-	panic("implement me")
-}
-
-func (r restHandler) GetList(c *gin.Context) {
-	panic("implement me")
-}
-
-func NewRestHandler() RestHandler {
-	return &restHandler{}
+func NewRestHandler(loanService service.LoanService) RestHandler {
+	return &restHandler{loanService: loanService}
 }

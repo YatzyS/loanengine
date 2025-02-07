@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/loanengine/internal/handler/rest"
+	"github.com/loanengine/internal/service"
 	"github.com/loanengine/pkg/middleware"
 	"github.com/loanengine/pkg/server"
 	log "github.com/sirupsen/logrus"
@@ -30,7 +31,7 @@ func main() {
 		engine.HandleMethodNotAllowed = true
 		engine.NoRoute(middleware.NoRoute)
 		engine.NoMethod(middleware.NoMethod)
-
+		engine.MaxMultipartMemory = 8 << 20 // 8 MiB
 		log.Info("starting loan engine server host:", config.Host, " port:", config.Port)
 
 		err := startServer(engine, config.Host, config.Port)
@@ -47,7 +48,8 @@ func main() {
 }
 
 func SetupHandler() rest.RestHandler {
-	handler := rest.NewRestHandler()
+	loanService := service.NewLoanService()
+	handler := rest.NewRestHandler(loanService)
 	return handler
 }
 
