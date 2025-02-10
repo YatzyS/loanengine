@@ -3,6 +3,7 @@ package dao
 import "time"
 
 type Loan struct {
+	LoanId          string  `json:"loan_id"`
 	BorrowerId      string  `json:"borrower_id"`
 	PrincipleAmount int     `json:"principle_amount"`
 	Rate            float64 `json:"rate"`
@@ -22,4 +23,20 @@ type ApproveDetails struct {
 	EmpId     string    `form:"emp_id"`
 	Date      time.Time `form:"date"`
 	ImagePath string
+}
+
+type GetListResponse struct {
+	Loans []LoanListDetails
+}
+
+type LoanListDetails struct {
+	LoanId          string  `json:"loan_id"`
+	PrincipleAmount int     `json:"principle_amount"`
+	Rate            float64 `json:"rate"`
+	ROI             float64 `json:"roi"`
+}
+
+type LoanStateResponse struct {
+	LoanId string `json:"loan_id"`
+	LoanState string `json:"loan_state"`
 }

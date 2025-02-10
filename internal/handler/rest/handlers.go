@@ -145,11 +145,13 @@ func (r restHandler) GetState(c *gin.Context) {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
-	if err := r.loanService.GetState(c, loanId); err != nil {
+	var err error
+	resp := &dao.LoanStateResponse{}
+	if resp, err = r.loanService.GetState(c, loanId); err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, resp)
 }
 
 func (r restHandler) GetList(c *gin.Context) {
@@ -168,9 +170,10 @@ func (r restHandler) GetList(c *gin.Context) {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
-	if err := r.loanService.GetList(c, page, offset, state); err != nil {
+	resp := &dao.GetListResponse{}
+	if resp, err = r.loanService.GetList(c, page, offset, state); err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, resp)
 }

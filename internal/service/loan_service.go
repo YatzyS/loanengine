@@ -10,8 +10,8 @@ type LoanService interface {
 	Propose(ctx context.Context, loan *dao.Loan) error
 	Approve(ctx context.Context, approve *dao.ApproveDetails) error
 	Invest(ctx context.Context, invest *dao.LoanInvest) error
-	GetState(ctx context.Context, loanId string) error
-	GetList(ctx context.Context, page int, offset int, state string) error
+	GetState(ctx context.Context, loanId string) (*dao.LoanStateResponse, error)
+	GetList(ctx context.Context, page int, offset int, state string) (*dao.GetListResponse, error)
 }
 
 type loanService struct{}
@@ -20,11 +20,11 @@ func (l *loanService) Approve(ctx context.Context, approve *dao.ApproveDetails) 
 	panic("unimplemented")
 }
 
-func (l *loanService) GetList(ctx context.Context, page int, offset int, state string) error {
+func (l *loanService) GetList(ctx context.Context, page int, offset int, state string) (*dao.GetListResponse, error) {
 	panic("unimplemented")
 }
 
-func (l *loanService) GetState(ctx context.Context, loanId string) error {
+func (l *loanService) GetState(ctx context.Context, loanId string) (*dao.LoanStateResponse, error) {
 	panic("unimplemented")
 }
 
