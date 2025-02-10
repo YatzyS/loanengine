@@ -137,6 +137,6 @@ func (l *loanService) Propose(ctx context.Context, loan *dao.Loan) error {
 	return nil
 }
 
-func NewLoanService() LoanService {
-	return &loanService{}
+func NewLoanService(repo repo.LoanRepo, agreementGenerator AgreementGenerator, notificationService NotificationService) LoanService {
+	return &loanService{repo: repo, agreementGenerator: agreementGenerator, notificationService: notificationService}
 }

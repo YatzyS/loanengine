@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/loanengine/internal/handler/rest"
+	"github.com/loanengine/internal/repo"
 	"github.com/loanengine/internal/service"
 	"github.com/loanengine/pkg/middleware"
 	"github.com/loanengine/pkg/server"
@@ -48,7 +49,10 @@ func main() {
 }
 
 func SetupHandler() rest.RestHandler {
-	loanService := service.NewLoanService()
+	repo := repo.NewLoanRepo()
+	notificationService := service.NewNotificationService(repo)
+	agreementGenerator := service.NewAgreementGenerator(repo)
+	loanService := service.NewLoanService(repo, agreementGenerator, notificationService)
 	handler := rest.NewRestHandler(loanService)
 	return handler
 }

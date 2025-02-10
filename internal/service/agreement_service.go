@@ -27,6 +27,6 @@ func (a *agreementGenerator) Generate(ctx context.Context, loanID string) error 
 	return nil
 }
 
-func NewAgreementGenerator() AgreementGenerator {
-	return &agreementGenerator{}
+func NewAgreementGenerator(repo repo.LoanRepo) AgreementGenerator {
+	return &agreementGenerator{repo: repo}
 }
