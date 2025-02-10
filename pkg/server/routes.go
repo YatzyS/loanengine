@@ -14,6 +14,6 @@ func (a *App) SetupRoutesAndMiddleware(router *gin.RouterGroup, restHandler rest
 	loan.POST("/invest", restHandler.Invest)
 	loan.POST("/approve", restHandler.Approve)
 	loan.POST("/disburse", restHandler.Disburse)
-	loan.GET("/state", restHandler.GetState)
+	loan.GET("/state/:id", restHandler.GetState)
 	loan.GET("/list/*state", restHandler.GetList)
 }
