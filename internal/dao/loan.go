@@ -13,11 +13,10 @@ type Loan struct {
 type LoanInvest struct {
 	InvestorId string `json:"investor_id"`
 	LoanId     string `json:"loan_id"`
-	Amount     string `json:"amount"`
+	Amount     int    `json:"amount"`
 }
 
-// TODO: Find a better name as it will be used for both Approve and Disburse
-type ApproveDetails struct {
+type VerifyDetails struct {
 	LoanId    string    `form:"loan_id"`
 	EmpId     string    `form:"emp_id"`
 	Date      time.Time `form:"date"`
@@ -36,6 +35,10 @@ type LoanListDetails struct {
 }
 
 type LoanStateResponse struct {
-	LoanId string `json:"loan_id"`
+	LoanId    string `json:"loan_id"`
 	LoanState string `json:"loan_state"`
+}
+
+type GenericResponse struct {
+	Message string `json:"message"`
 }
