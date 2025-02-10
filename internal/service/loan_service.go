@@ -11,9 +11,9 @@ import (
 
 type LoanService interface {
 	Propose(ctx context.Context, loan *dao.Loan) error
-	Approve(ctx context.Context, approve *dao.ApproveDetails) error
+	Approve(ctx context.Context, approve *dao.VerifyDetails) error
 	Invest(ctx context.Context, invest *dao.LoanInvest) error
-	Disburse(ctx context.Context, disburse *dao.ApproveDetails) error
+	Disburse(ctx context.Context, disburse *dao.VerifyDetails) error
 	GetState(ctx context.Context, loanId string) (*dao.LoanStateResponse, error)
 	GetList(ctx context.Context, page int, offset int, state string) (*dao.GetListResponse, error)
 }
@@ -24,9 +24,10 @@ type loanService struct {
 	notificationService NotificationService
 }
 
-func (l *loanService) Approve(ctx context.Context, approve *dao.ApproveDetails) error {
+func (l *loanService) Approve(ctx context.Context, approve *dao.VerifyDetails) error {
 	query := &dao.LoanStateTable{
 		LoanID:       approve.LoanId,
+		LoanState:    string(constants.APPROVED),
 		ApproveEmpID: approve.EmpId,
 		ApproveProof: approve.ImagePath,
 		ApproveDate:  approve.Date,
@@ -38,12 +39,12 @@ func (l *loanService) Approve(ctx context.Context, approve *dao.ApproveDetails) 
 	return nil
 }
 
-func (l *loanService) GetList(ctx context.Context, page int, offset int, state string) (*dao.GetListResponse, error) {
+func (l *loanService) GetList(ctx context.Context, limit int, offset int, state string) (*dao.GetListResponse, error) {
 	query := &dao.LoanStateTable{}
 	if state != "" {
 		query.LoanState = state
 	}
-	dbResp, err := l.repo.GetList(ctx, query, page, offset)
+	dbResp, err := l.repo.GetList(ctx, query, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +63,7 @@ func (l *loanService) GetList(ctx context.Context, page int, offset int, state s
 }
 
 func (l *loanService) GetState(ctx context.Context, loanId string) (*dao.LoanStateResponse, error) {
-	query := &dao.LoanTable{LoanID: loanId}
+	query := &dao.LoanStateTable{LoanID: loanId}
 	// TODO: Check if facade is required as it queries on two tables.
 	state, err := l.repo.GetState(ctx, query)
 	if err != nil {
@@ -105,9 +106,10 @@ func (l *loanService) Invest(ctx context.Context, invest *dao.LoanInvest) error 
 	return nil
 }
 
-func (l *loanService) Disburse(ctx context.Context, disburse *dao.ApproveDetails) error {
+func (l *loanService) Disburse(ctx context.Context, disburse *dao.VerifyDetails) error {
 	query := &dao.LoanStateTable{
 		LoanID:        disburse.LoanId,
+		LoanState:     string(constants.DISBURSED),
 		DisburseEmpID: disburse.EmpId,
 		DisburseProof: disburse.ImagePath,
 		DisburseDate:  disburse.Date,

@@ -27,7 +27,7 @@ func CheckInvestRequest(req *dao.LoanInvest) error {
 	return err
 }
 
-func CheckApproveReq(req *dao.ApproveDetails) error {
+func CheckApproveReq(req *dao.VerifyDetails) error {
 	var err error
 	if req.EmpId == "" {
 		err = multierr.Append(err, fmt.Errorf("validation: invalid emp_id"))

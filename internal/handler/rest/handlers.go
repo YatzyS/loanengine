@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -19,22 +20,29 @@ func (r restHandler) Propose(c *gin.Context) {
 		2. Validate Data
 		3. Call Service layer
 	*/
+	resp := &dao.GenericResponse{}
 	req := &dao.Loan{}
 	if err := c.BindJSON(req); err != nil {
 		err = fmt.Errorf("loan engine:%w", err)
 		log.WithContext(c).Error(err)
-		c.AbortWithError(http.StatusBadRequest, err)
+		resp.Message = err.Error()
+		c.JSON(http.StatusBadRequest, resp)
 		return
 	}
 	if err := validation.CheckLoanDetails(req); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		log.WithContext(c).Error(err)
+		resp.Message = err.Error()
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 	if err := r.loanService.Propose(c, req); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		log.WithContext(c).Error(err)
+		resp.Message = err.Error()
+		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
-	c.Status(http.StatusOK)
+	resp.Message = constants.SUCCESS_MESSAGE
+	c.JSON(http.StatusOK, resp)
 }
 
 func (r restHandler) Approve(c *gin.Context) {
@@ -43,18 +51,21 @@ func (r restHandler) Approve(c *gin.Context) {
 		2. Name it using UUID.
 		3. Save the path in a string and pass it on to service for storing.
 	*/
-	req := &dao.ApproveDetails{}
+	req := &dao.VerifyDetails{}
+	resp := &dao.GenericResponse{}
 	if err := c.ShouldBind(req); err != nil {
 		err = fmt.Errorf("loan engine:%w", err)
 		log.WithContext(c).Error(err)
-		c.AbortWithError(http.StatusBadRequest, err)
+		resp.Message = err.Error()
+		c.JSON(http.StatusBadRequest, resp)
 		return
 	}
 	photo, err := c.FormFile("photo")
 	if err != nil {
 		err = fmt.Errorf("loan engine:%w", err)
 		log.WithContext(c).Error(err)
-		c.AbortWithError(http.StatusBadRequest, err)
+		resp.Message = err.Error()
+		c.JSON(http.StatusBadRequest, resp)
 		return
 	}
 	dstPath := constants.APPROVE_FILE_UPLOAD_PATH + req.LoanId + "/" + uuid.New().String() + ".jpg"
@@ -62,38 +73,51 @@ func (r restHandler) Approve(c *gin.Context) {
 	if err != nil {
 		err = fmt.Errorf("loan engine:%w", err)
 		log.WithContext(c).Error(err)
-		c.AbortWithError(http.StatusInternalServerError, err)
+		resp.Message = err.Error()
+		c.JSON(http.StatusInternalServerError, resp)
 		return
 	}
 	req.ImagePath = dstPath
 	if err := validation.CheckApproveReq(req); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		log.WithContext(c).Error(err)
+		resp.Message = err.Error()
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 	if err := r.loanService.Approve(c, req); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		log.WithContext(c).Error(err)
+		resp.Message = err.Error()
+		c.JSON(http.StatusInternalServerError, resp)
 		return
 	}
-	c.Status(http.StatusOK)
+	resp.Message = constants.SUCCESS_MESSAGE
+	c.JSON(http.StatusOK, resp)
 }
 
 func (r restHandler) Invest(c *gin.Context) {
 	req := &dao.LoanInvest{}
+	resp := &dao.GenericResponse{}
 	if err := c.BindJSON(req); err != nil {
 		err = fmt.Errorf("loan engine:%w", err)
 		log.WithContext(c).Error(err)
-		c.AbortWithError(http.StatusBadRequest, err)
+		resp.Message = err.Error()
+		c.JSON(http.StatusBadRequest, resp)
 		return
 	}
 	if err := validation.CheckInvestRequest(req); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		log.WithContext(c).Error(err)
+		resp.Message = err.Error()
+		c.JSON(http.StatusBadRequest, resp)
 		return
 	}
 	if err := r.loanService.Invest(c, req); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		log.WithContext(c).Error(err)
+		resp.Message = err.Error()
+		c.JSON(http.StatusInternalServerError, resp)
 		return
 	}
-	c.Status(http.StatusOK)
+	resp.Message = constants.SUCCESS_MESSAGE
+	c.JSON(http.StatusOK, resp)
 }
 
 func (r restHandler) Disburse(c *gin.Context) {
@@ -103,18 +127,21 @@ func (r restHandler) Disburse(c *gin.Context) {
 		3. Save the path in a string and pass it on to service for storing.
 	*/
 	// TODO: Try to come up with a method as there is repeating code
-	req := &dao.ApproveDetails{}
+	req := &dao.VerifyDetails{}
+	resp := &dao.GenericResponse{}
 	if err := c.ShouldBind(req); err != nil {
 		err = fmt.Errorf("loan engine:%w", err)
 		log.WithContext(c).Error(err)
-		c.AbortWithError(http.StatusBadRequest, err)
+		resp.Message = err.Error()
+		c.JSON(http.StatusBadRequest, resp)
 		return
 	}
 	photo, err := c.FormFile("photo")
 	if err != nil {
 		err = fmt.Errorf("loan engine:%w", err)
 		log.WithContext(c).Error(err)
-		c.AbortWithError(http.StatusBadRequest, err)
+		resp.Message = err.Error()
+		c.JSON(http.StatusBadRequest, resp)
 		return
 	}
 	dstPath := constants.DISBURSE_FILE_UPLOAD_PATH + req.LoanId + "/" + uuid.New().String() + ".jpg"
@@ -122,57 +149,74 @@ func (r restHandler) Disburse(c *gin.Context) {
 	if err != nil {
 		err = fmt.Errorf("loan engine:%w", err)
 		log.WithContext(c).Error(err)
-		c.AbortWithError(http.StatusInternalServerError, err)
+		resp.Message = err.Error()
+		c.JSON(http.StatusInternalServerError, resp)
 		return
 	}
 	req.ImagePath = dstPath
 	if err := validation.CheckApproveReq(req); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		log.WithContext(c).Error(err)
+		resp.Message = err.Error()
+		c.JSON(http.StatusBadRequest, resp)
 		return
 	}
 	if err := r.loanService.Disburse(c, req); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		log.WithContext(c).Error(err)
+		resp.Message = err.Error()
+		c.JSON(http.StatusInternalServerError, resp)
 		return
 	}
-	c.Status(http.StatusOK)
+	resp.Message = constants.SUCCESS_MESSAGE
+	c.JSON(http.StatusOK, resp)
 }
 
 func (r restHandler) GetState(c *gin.Context) {
+	errResp := &dao.GenericResponse{}
 	loanId := c.Param("id")
 	if loanId == "" {
 		err := fmt.Errorf("loan engine: loan id cannot be empty")
 		log.WithContext(c).Error(err)
-		c.AbortWithError(http.StatusBadRequest, err)
+		errResp.Message = err.Error()
+		c.JSON(http.StatusBadRequest, errResp)
 		return
 	}
 	var err error
 	resp := &dao.LoanStateResponse{}
 	if resp, err = r.loanService.GetState(c, loanId); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		log.WithContext(c).Error(err)
+		errResp.Message = err.Error()
+		c.JSON(http.StatusInternalServerError, errResp)
 		return
 	}
 	c.JSON(http.StatusOK, resp)
 }
 
 func (r restHandler) GetList(c *gin.Context) {
+	errResp := &dao.GenericResponse{}
 	state := c.Param("state")
-	page, err := strconv.Atoi(c.Query("page"))
+	state = strings.Trim(state, "/")
+	state = strings.ToUpper(state)
+	limit, err := strconv.Atoi(c.Query("limit"))
 	if err != nil {
-		err = fmt.Errorf("loan engine:%w", err)
+		err = fmt.Errorf("loan engine invalid limit:%w", err)
 		log.WithContext(c).Error(err)
-		c.AbortWithError(http.StatusBadRequest, err)
+		errResp.Message = err.Error()
+		c.JSON(http.StatusInternalServerError, errResp)
 		return
 	}
 	offset, err := strconv.Atoi(c.Query("offset"))
 	if err != nil {
-		err = fmt.Errorf("loan engine:%w", err)
+		err = fmt.Errorf("loan engine invalid offset:%w", err)
 		log.WithContext(c).Error(err)
-		c.AbortWithError(http.StatusBadRequest, err)
+		errResp.Message = err.Error()
+		c.JSON(http.StatusInternalServerError, errResp)
 		return
 	}
 	resp := &dao.GetListResponse{}
-	if resp, err = r.loanService.GetList(c, page, offset, state); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+	if resp, err = r.loanService.GetList(c, limit, offset, state); err != nil {
+		log.WithContext(c).Error(err)
+		errResp.Message = err.Error()
+		c.JSON(http.StatusInternalServerError, errResp)
 		return
 	}
 	c.JSON(http.StatusOK, resp)
