@@ -23,7 +23,7 @@ func (e *emailNotification) NotifyForAgreement(ctx context.Context, loanID strin
 		return err
 	}
 	// Printing the investors list for now. This will be used to query investor details and notify them as required.
-	logrus.WithContext(ctx).Infof("list of investors: ", investorList)
+	logrus.WithContext(ctx).Infof("list of investors: %v", investorList)
 	return nil
 }
 
