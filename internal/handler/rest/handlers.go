@@ -130,7 +130,7 @@ func (r restHandler) Disburse(c *gin.Context) {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
-	if err := r.loanService.Approve(c, req); err != nil {
+	if err := r.loanService.Disburse(c, req); err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
