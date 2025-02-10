@@ -3,7 +3,6 @@ package repo
 import (
 	"context"
 	"fmt"
-	"log"
 	"sync"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -63,7 +62,7 @@ func (l *loanRepo) ApproveLoan(ctx context.Context, query *dao.LoanStateTable) e
 		return fmt.Errorf("invalid state trasnsition to approve")
 	}
 	query.Version = loanStateRow.Version
-	_, err = l.engine.Context(ctx).Where("loan_id=?",query.LoanID).Update(query)
+	_, err = l.engine.Context(ctx).Where("loan_id=?", query.LoanID).Update(query)
 	if err != nil {
 		return fmt.Errorf("approve loan error: %w", err)
 	}
@@ -86,7 +85,7 @@ func (l *loanRepo) DisburseLoan(ctx context.Context, query *dao.LoanStateTable) 
 		return fmt.Errorf("invalid state trasnsition to disburse")
 	}
 	query.Version = loanStateRow.Version
-	_, err = l.engine.Context(ctx).Where("loan_id=?",query.LoanID).Update(query)
+	_, err = l.engine.Context(ctx).Where("loan_id=?", query.LoanID).Update(query)
 	if err != nil {
 		return fmt.Errorf("disburse loan error: %w", err)
 	}
@@ -99,7 +98,7 @@ func (l *loanRepo) GetList(ctx context.Context, query *dao.LoanStateTable, limit
 		Get list of loan Ids with required state
 	*/
 	var list []*dao.LoanTable
-	qb :=  builder.Select("loan_id").From(constants.LOAN_STATE_TABLE)
+	qb := builder.Select("loan_id").From(constants.LOAN_STATE_TABLE)
 	if query.LoanState != "" {
 		qb = qb.Where(builder.Eq{"loan_state": query.LoanState})
 	}
@@ -170,7 +169,7 @@ func (l *loanRepo) Invest(ctx context.Context, query *dao.LoanInvestmentTable) (
 		return "", fmt.Errorf("insert loan investment error: %w", err)
 	}
 	q := &dao.LoanAmountTable{InvestedAmount: row.InvestedAmount + query.Amount, Version: row.Version}
-	_, err = l.engine.Context(ctx).Where("loan_id=?",row.LoanID).Update(q)
+	_, err = l.engine.Context(ctx).Where("loan_id=?", row.LoanID).Update(q)
 	if err != nil {
 		session.Rollback()
 		return "", fmt.Errorf("update loan amount error: %w", err)
@@ -187,7 +186,7 @@ func (l *loanRepo) Invest(ctx context.Context, query *dao.LoanInvestmentTable) (
 	}
 	if q.InvestedAmount == row.RequiredAmount {
 		row := &dao.LoanStateTable{LoanState: string(constants.INVESTED), Version: stateRow.Version}
-		_, err = l.engine.Context(ctx).Where("loan_id=?",stateRow.LoanID).Update(row)
+		_, err = l.engine.Context(ctx).Where("loan_id=?", stateRow.LoanID).Update(row)
 		if err != nil {
 			session.Rollback()
 			return "", fmt.Errorf("update loan state error: %w", err)
@@ -247,7 +246,7 @@ func (l *loanRepo) UpdateAgreementLink(ctx context.Context, loanId string, agree
 		return fmt.Errorf("loan details for agreement not found")
 	}
 	q := &dao.LoanTable{AgreementLink: agreementLink, Version: loanRow.Version}
-	_, err = l.engine.Context(ctx).Where("loan_id=?",loanRow.LoanID).Update(q)
+	_, err = l.engine.Context(ctx).Where("loan_id=?", loanRow.LoanID).Update(q)
 	if err != nil {
 		return fmt.Errorf("update agreement error: %w", err)
 	}
@@ -260,12 +259,12 @@ func NewLoanRepo() LoanRepo {
 	var err error
 	en, err := xorm.NewEngine("pgx", dbinfo)
 	if err != nil {
-		log.Fatalf("engine creation failed", err)
+		logrus.Fatalf("engine creation failed %w", err)
 	}
 	en.ShowSQL(true)
 	err = en.Ping()
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatalf("couldn't ping the DB: %w", err)
 	}
 	logrus.Info("Successfully connected")
 	return &loanRepo{engine: en, mu: sync.RWMutex{}}
